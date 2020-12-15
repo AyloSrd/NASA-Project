@@ -1,5 +1,6 @@
-import { Router } from 'https://deno.land/x/oak@v6.4.0/mod.ts'
+import { Router } from './deps.ts'
 import * as planets from './models/planets.ts'
+import * as launches from './models/launches.ts'
 
 const router = new Router()
 
@@ -15,8 +16,37 @@ router.get('/', (ctx) => {
 					  Mission Control API`;
   })
   
-  router.get('/planets', (ctx) => {
-	ctx.response.body = planets.getAll();
-  })
+router.get('/planets', (ctx) => {
+	ctx.response.body = planets.getAll()
+})
+
+router.get('/launches', (ctx) => {
+	ctx.response.body = launches.getAll()
+})
+
+router.get('/launches/:id', (ctx) => {
+	if(ctx.params?.id) {
+		const launchFound = launches.getOne(Number(ctx.params.id))
+		if (launchFound) {
+			ctx.response.body = launchFound
+		} else {
+			ctx.throw(400, 'Launch with that ID doesn\'t exists')
+		}
+	}
+})
+
+router.delete('/launches/:id', (ctx) => {
+	if(ctx.params?.id) {
+		const abortedLaunch = launches.removeOne(Number(ctx.params.id))
+		ctx.response.body = { success: abortedLaunch }
+	}
+})
+
+router.post('/launches', async (ctx) => {
+	const body = await ctx.request.body().value
+	launches.addOne(body)
+	ctx.response.body = { success: true }
+	ctx.response.status = 201
+})
 
   export default router

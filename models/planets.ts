@@ -1,13 +1,16 @@
-import { join } from "https://deno.land/std@0.80.0/path/mod.ts"
-import { BufReader } from 'https://deno.land/std@0.80.0/io/bufio.ts'
-import { parse } from "https://deno.land/std@0.80.0/encoding/csv.ts"
-import * as _ from "https://raw.githubusercontent.com/lodash/lodash/4.17.15-es/lodash.js"
+import { 
+	log,
+	join,
+	parse,
+	BufReader,
+	pick,
+  } from "../deps.ts";
 
 type Planet = Record<string, string>
 
 let planets : Array<Planet>
 
-async function loadPlanetsData() {
+const loadPlanetsData = async() => {
 	const path = join('.', 'data', 'kepler_exoplanets_nasa.csv')
 
 	const file = await Deno.open(path)
@@ -34,7 +37,7 @@ async function loadPlanetsData() {
 		)}
 	)
 
-	return planets.map(planet => _.pick(planet, [
+	return planets.map(planet => pick(planet, [
 		'koi_prad',
 		'koi_smass',
 		'koi_srad',

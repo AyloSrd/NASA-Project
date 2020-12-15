@@ -14,22 +14,34 @@ function initValues() {
   launchDaySelector.setAttribute("value", today);
 }
 
-function loadLaunches() {
-  // TODO: Once API is ready.
-  // Load launches and sort by flight number.
+const loadLaunches = async () => {
+  return fetch('/launches')
+    .then(res => res.json())
+    .then(data => launches = data.sort((a, b) => a.flightNumber < b.flightNumber))
+    .catch(err => console.error(err))
 }
 
-function loadPlanets() {
-  // TODO: Once API is ready.
-  // const planetSelector = document.getElementById("planets-selector");
-  // planets.forEach((planet) => {
-  //   planetSelector.innerHTML += `<option value="${planet.kepler_name}">${planet.kepler_name}</option>`;
-  // });
+const loadPlanets = () => {
+  fetch('/planets')
+    .then(res => res.json())
+    .then(data => {
+      const planets = data
+      const planetSelector = document.getElementById("planets-selector")
+      planets.forEach((planet) => {
+      planetSelector.innerHTML += `<option value="${planet.kepler_name}">${planet.kepler_name}</option>`;
+    })
+    })
+    .catch(err => console.error(err))
 }
 
-function abortLaunch() {
-  // TODO: Once API is ready.
-  // Delete launch and reload launches.
+const abortLaunch = id => {
+  fetch(`/launches/${id}`, {
+    method: 'DELETE'
+  })
+    .then(() => {
+      loadLaunches()
+      .then(listUpcoming)
+    })
 }
 
 function submitLaunch() {
@@ -38,9 +50,24 @@ function submitLaunch() {
   const mission = document.getElementById("mission-name").value;
   const rocket = document.getElementById("rocket-name").value;
   const flightNumber = launches[launches.length - 1].flightNumber + 1;
+  
+  fetch('/launches', {
+    method: 'POST',
+    headers: {
+      'Content-Type':'application/json'
+    },
+    body: JSON.stringify({
+      target,
+      launchDate: Math.floor(launchDate/1000),
+      mission,
+      rocket,
+      flightNumber
+    })
+  })
+    .then(() => document.getElementById('launch-success').hidden = false)
+    .then(loadLaunches)
+    .then(() => document.getElementById("mission-name").value = '')
 
-  // TODO: Once API is ready.
-  // Submit above data to launch system and reload launches.
 }
 
 function listUpcoming() {
