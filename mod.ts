@@ -1,5 +1,5 @@
-import { Application, send } from 'https://deno.land/x/oak/mod.ts'
-
+import { Application, send } from 'https://deno.land/x/oak@v6.4.0/mod.ts'
+import api from './api.ts'
 const app = new Application()
 const PORT = 8000
 
@@ -16,6 +16,9 @@ app.use( async (ctx, next) => {
 	ctx.response.headers.set('X-Response-Time', `${delta}ms`)
 })
 
+app.use(api.routes())
+app.use(api.allowedMethods())
+
 app.use(async ctx => {
 	const filePath= ctx.request.url.pathname
 	const fileWhitelist = [
@@ -24,13 +27,11 @@ app.use(async ctx => {
 		'/stylesheets/style.css',
 		'/images/favicon.png'
 	]
-	await send(ctx, filePath, {
-		root: `${Deno.cwd()}/public`
-	})
-})
-
-app.use(ctx => {
-	ctx.response.body= 'Hello World'
+	if (fileWhitelist.includes(filePath)){	
+		await send(ctx, filePath, { 
+			root: `${Deno.cwd()}/public`
+		})
+	}
 })
 
 if (import.meta.main) {
